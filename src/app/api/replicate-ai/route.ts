@@ -11,10 +11,15 @@ export async function POST(request: NextRequest) {
     console.log('Prompt:', prompt);
 
     const output = await replicate.run(
-      'stability-ai/stable-diffusion-3',
+      //'stability-ai/stable-diffusion-3',
+      'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
       {
         input: {
           prompt: prompt,
+          negative_prompt: 'low quality, bad anatomy, blurry, pixelated',
+          num_outputs: 1,
+          num_inference_steps: 50,
+          guidance_scale: 7.5,
         },
       }
     );
@@ -30,3 +35,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
+
