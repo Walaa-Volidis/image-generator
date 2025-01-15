@@ -27,9 +27,7 @@ export default function ImageGenerator() {
       <Card className="w-full max-w-xl">
         <CardHeader>
           <CardTitle>AI Image Generator</CardTitle>
-          <CardDescription>
-            Create unique images using Replicate AI
-          </CardDescription>
+          <CardDescription>Create images using Replicate AI</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
