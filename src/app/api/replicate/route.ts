@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   const input = {
     width: 768,
     height: 768,
-    prompt: prompt,
+    prompt,
     refine: 'expert_ensemble_refiner',
     apply_watermark: false,
     num_inference_steps: 25,
