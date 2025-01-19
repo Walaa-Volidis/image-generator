@@ -1,11 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import Replicate from 'replicate';
 import { writeFile } from 'node:fs/promises';
-import { z } from 'zod';
-
-const ZReplicateSchema = z.object({
-  imageUrl: z.string(),
-});
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -35,7 +30,6 @@ export async function POST(request: NextRequest) {
       await writeFile(filePath, item);
       imageUrl = filePath.replace('./public', '');
     }
-    ZReplicateSchema.parse({ imageUrl });
     console.log('images', imageUrl);
     return NextResponse.json({
       message: 'Images generated and saved successfully',
