@@ -7,36 +7,35 @@ const replicate = new Replicate({
 });
 
 export async function POST(request: NextRequest) {
+  const { prompt } = await request.json();
+
+  const input = {
+    width: 768,
+    height: 768,
+    prompt: prompt,
+    refine: 'expert_ensemble_refiner',
+    apply_watermark: false,
+    num_inference_steps: 25,
+  };
+  let output;
   try {
-    const { prompt } = await request.json();
-
-    const input = {
-      width: 768,
-      height: 768,
-      prompt: prompt,
-      refine: 'expert_ensemble_refiner',
-      apply_watermark: false,
-      num_inference_steps: 25,
-    };
-
-    const output = await replicate.run('stability-ai/stable-diffusion-3', {
+    output = await replicate.run('stability-ai/stable-diffusion-3', {
       input,
-    });
-
-    let imageUrl: string = '';
-
-    for (const [index, item] of Object.entries(output)) {
-      const filePath = `./public/${prompt}_${index}.png`;
-      await writeFile(filePath, item);
-      imageUrl = filePath.replace('./public', '');
-    }
-    console.log('images', imageUrl);
-    return NextResponse.json({
-      message: 'Images generated and saved successfully',
-      imageUrl: imageUrl,
     });
   } catch (error) {
     console.error('Error:', error);
     return NextResponse.json({ error: 'Failed to generate image' });
   }
+  let imageUrl: string = '';
+
+  for (const [index, item] of Object.entries(output)) {
+    const filePath = `./public/${prompt}_${index}.png`;
+    await writeFile(filePath, item);
+    imageUrl = filePath.replace('./public', '');
+  }
+  console.log('images', imageUrl);
+  return NextResponse.json({
+    message: 'Images generated and saved successfully',
+    imageUrl: imageUrl,
+  });
 }
