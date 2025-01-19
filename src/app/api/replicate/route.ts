@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Replicate from 'replicate';
 import { SERVER_SETTINGS } from './../../../settings';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
     width: 768,
     height: 768,
     prompt,
-    num_images: 1,
     refine: 'expert_ensemble_refiner',
     apply_watermark: false,
     num_inference_steps: 25,
