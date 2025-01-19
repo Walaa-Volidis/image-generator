@@ -1,9 +1,10 @@
 import { NextResponse, NextRequest } from 'next/server';
 import Replicate from 'replicate';
 import { writeFile } from 'node:fs/promises';
+import { SERVER_SETTINGS } from './../../../settings';
 
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
+  auth: SERVER_SETTINGS.replicateApiToken,
 });
 
 export async function POST(request: NextRequest) {
