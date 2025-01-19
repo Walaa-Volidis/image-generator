@@ -37,6 +37,6 @@ export async function POST(request: NextRequest) {
   console.log('images', imageUrl);
   return NextResponse.json({
     message: 'Images generated and saved successfully',
-    imageUrl: imageUrl,
+    imageUrl,
   });
 }
