@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Replicate from 'replicate';
 import { SERVER_SETTINGS } from './../../../settings';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import crypto from 'crypto';
+import { uploadToS3 } from '@/lib/uploadToS3';
 
 const replicate = new Replicate({
   auth: SERVER_SETTINGS.replicateApiToken,
 });
-
-const S3 = new S3Client({
-  region: SERVER_SETTINGS.region,
-  endpoint: SERVER_SETTINGS.endpoint,
-  credentials: {
-    accessKeyId: SERVER_SETTINGS.accessKeyId,
-    secretAccessKey: SERVER_SETTINGS.secretAccessKey,
-  },
-});
-
-const DEST_BUCKET = SERVER_SETTINGS.destBucket;
 
 async function streamToBuffer(stream: ReadableStream): Promise<Buffer> {
   const reader = stream.getReader();
@@ -40,7 +28,7 @@ export async function POST(request: NextRequest) {
     apply_watermark: false,
     num_inference_steps: 25,
   };
-  let output;
+  let output: unknown;
   try {
     output = await replicate.run('stability-ai/stable-diffusion-3', {
       input,
@@ -51,20 +39,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to generate image' });
   }
   let imageUrl: string = '';
-  const buffer = await streamToBuffer(output[0]);
+  console.log('output', output);
+  const item = output[0];
+  const buffer = await streamToBuffer(item);
   const imageName = `${crypto.randomUUID()}.png`;
   console.log('imageName', imageName);
-
-  await S3.send(
-    new PutObjectCommand({
-      Bucket: DEST_BUCKET,
-      Key: imageName,
-      Body: buffer,
-      ACL: 'public-read',
-    })
-  );
-  imageUrl = `${SERVER_SETTINGS.s3CDN}${imageName}`;
-  console.log('images', imageUrl);
+  try {
+    imageUrl = await uploadToS3(buffer);
+  } catch (error) {
+    console.error('Error uploading to S3:', error);
+    return NextResponse.json({ error: 'Failed to upload image to S3' });
+  }
   return NextResponse.json({
     message: 'Images generated and uploaded successfully',
     imageUrl,
