@@ -6,7 +6,6 @@ export const ZServerSettings = z.object({
   accessKeyId: z.string(),
   secretAccessKey: z.string(),
   destBucket: z.string(),
-  s3CDN: z.string(),
   endpoint: z.string(),
 });
 
@@ -16,6 +15,5 @@ export const SERVER_SETTINGS = ZServerSettings.parse({
   accessKeyId: process.env['ACCESS_KEY'],
   secretAccessKey: process.env['SECRET_ACCESS_KEY'],
   destBucket: process.env['DEST_BUCKET'],
-  s3CDN: process.env['S3_CDN_URL'],
   endpoint: process.env['S3_ENDPOINT'],
 });
