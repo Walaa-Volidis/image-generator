@@ -1,11 +1,21 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Replicate from 'replicate';
-import { writeFile } from 'node:fs/promises';
 import { SERVER_SETTINGS } from './../../../settings';
+import { uploadToS3 } from '@/lib/uploadToS3';
 
 const replicate = new Replicate({
   auth: SERVER_SETTINGS.replicateApiToken,
 });
+
+async function streamToBuffer(stream: ReadableStream): Promise<Buffer> {
+  const reader = stream.getReader();
+  const chunks = [];
+  let done, value;
+  while ((({ done, value } = await reader.read()), !done)) {
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks);
+}
 
 export async function POST(request: NextRequest) {
   const { prompt } = await request.json();
@@ -18,25 +28,30 @@ export async function POST(request: NextRequest) {
     apply_watermark: false,
     num_inference_steps: 25,
   };
-  let output;
+  let output: unknown;
   try {
     output = await replicate.run('stability-ai/stable-diffusion-3', {
       input,
     });
+    console.log('output', output);
   } catch (error) {
     console.error('Error:', error);
     return NextResponse.json({ error: 'Failed to generate image' });
   }
   let imageUrl: string = '';
-
-  for (const [index, item] of Object.entries(output)) {
-    const filePath = `./public/${prompt}_${index}.png`;
-    await writeFile(filePath, item);
-    imageUrl = filePath.replace('./public', '');
+  console.log('output', output);
+  const item = output[0];
+  const buffer = await streamToBuffer(item);
+  const imageName = `${crypto.randomUUID()}.png`;
+  console.log('imageName', imageName);
+  try {
+    imageUrl = await uploadToS3(buffer);
+  } catch (error) {
+    console.error('Error uploading to S3:', error);
+    return NextResponse.json({ error: 'Failed to upload image to S3' });
   }
-  console.log('images', imageUrl);
   return NextResponse.json({
-    message: 'Images generated and saved successfully',
+    message: 'Images generated and uploaded successfully',
     imageUrl,
   });
 }
