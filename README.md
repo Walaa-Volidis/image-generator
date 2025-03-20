@@ -1,1 +1,21 @@
+# Image Generator
+
+A powerful and user-friendly image generation application built with Next.js, leveraging AI models from Replicate AI to generate high-quality images based on user prompts. The UI is crafted using shadcn for a sleek and accessible design.
+
+## 🚀 Features
+
+- **AI-Powered Image Generation:** Uses [Replicate AI](https://replicate.com/) to generate images from user-provided prompts.
+- **Modern UI Components:** Built with [shadcn](https://shadcn.dev/) and styled with Tailwind CSS for a clean and responsive design.
+- **Fast and Efficient Rendering:** Developed with [Next.js](https://nextjs.org/) to ensure optimal performance and SEO-friendly pages.
+- **Dynamic Prompt Input:** Users can provide text prompts to generate customized images.
+
+
+## 🛠️ Technologies Used
+
+- **Next.js**: A React framework for building server-side rendered and static applications.
+- **Replicate AI**: A cloud-based AI platform that powers image generation through deep learning models.
+- **shadcn**: A customizable component library built on Tailwind CSS, ensuring a modern and accessible UI.
+- **Tailwind CSS**: A utility-first CSS framework for rapid UI development.
+- **TypeScript**: A strongly typed superset of JavaScript for better maintainability and developer experience.
+
 
