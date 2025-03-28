@@ -7,15 +7,23 @@ const replicate = new Replicate({
   auth: SERVER_SETTINGS.replicateApiToken,
 });
 
-async function streamToBuffer(stream: ReadableStream): Promise<Buffer> {
+async function streamToBuffer(
+  stream: ReadableStream<Uint8Array>
+): Promise<Buffer> {
   const reader = stream.getReader();
-  const chunks = [];
-  let done, value;
-  while ((({ done, value } = await reader.read()), !done)) {
-    chunks.push(value);
+  const chunks: Uint8Array[] = [];
+
+  let done = false;
+  while (!done) {
+    const { value, done: readerDone } = await reader.read();
+    if (value) chunks.push(value);
+    done = readerDone;
   }
+
   return Buffer.concat(chunks);
 }
+
+type ReplicateOutput = string[]; 
 
 export async function POST(request: NextRequest) {
   const { prompt } = await request.json();
@@ -28,20 +36,28 @@ export async function POST(request: NextRequest) {
     apply_watermark: false,
     num_inference_steps: 25,
   };
-  let output: unknown;
+
+  let output: ReplicateOutput = [];
   try {
-    output = await replicate.run('stability-ai/stable-diffusion-3', {
+    output = (await replicate.run('stability-ai/stable-diffusion-3', {
       input,
-    });
+    })) as ReplicateOutput;
     console.log('output', output);
   } catch (error) {
     console.error('Error:', error);
     return NextResponse.json({ error: 'Failed to generate image' });
   }
+
+  if (!Array.isArray(output) || output.length === 0) {
+    return NextResponse.json({ error: 'Invalid output from Replicate API' });
+  }
+
   let imageUrl: string = '';
   console.log('output', output);
-  const item = output[0];
-  const buffer = await streamToBuffer(item);
+
+  const imageResponse = await fetch(output[0]);
+  const imageStream = imageResponse.body as ReadableStream;
+  const buffer = await streamToBuffer(imageStream);
   const imageName = `${crypto.randomUUID()}.png`;
   console.log('imageName', imageName);
   try {
